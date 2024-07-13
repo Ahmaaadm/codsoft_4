@@ -2,4 +2,10 @@
     <string name="app_name">task4</string>
     <string name="channel_name">Example Channel</string>
     <string name="channel_description">This is an example notification channel.</string>
+    <string-array name="icon_array">
+        <item>Default Icon</item>
+        <item>Icon 1</item>
+        <item>Icon 2</item>
+        <item>Icon 3</item>
+    </string-array>
 </resources>

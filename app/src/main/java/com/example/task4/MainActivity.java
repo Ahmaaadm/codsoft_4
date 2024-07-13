@@ -7,7 +7,10 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,12 +19,13 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class MainActivity extends AppCompatActivity {
-    Button pushButton;
-    NotificationManagerCompat notificationManagerCompat;
-    Notification notification;
-    int pushCounter;
+    private EditText titleInput;
+    private EditText messageInput;
+    private Spinner iconSpinner;
+    private Button pushButton;
+    private NotificationManagerCompat notificationManagerCompat;
+    private int pushCounter;
 
-    // Request code for POST_NOTIFICATIONS permission
     private static final int REQUEST_POST_NOTIFICATIONS = 1;
 
     @Override
@@ -45,8 +49,17 @@ public class MainActivity extends AppCompatActivity {
 
         notificationManagerCompat = NotificationManagerCompat.from(this);
 
-        // Find button and set click listener
+        // Find input fields and button
+        titleInput = findViewById(R.id.title_input);
+        messageInput = findViewById(R.id.message_input);
+        iconSpinner = findViewById(R.id.icon_spinner);
         pushButton = findViewById(R.id.notify_button);
+
+        // Populate the spinner with icon options
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.icon_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        iconSpinner.setAdapter(adapter);
+
         pushButton.setOnClickListener(this::push);
     }
 
@@ -63,26 +76,34 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        // Build the notification with updated pushCounter
+        // Get user inputs
+        String title = titleInput.getText().toString();
+        String message = messageInput.getText().toString();
+        int icon = R.drawable.baseline_notifications_none_24; // Default icon
+
+        // Example for icon selection from Spinner
+        String selectedIcon = iconSpinner.getSelectedItem().toString();
+        if ("Icon 1".equals(selectedIcon)) {
+            icon = R.drawable.one;
+        } else if ("Icon 2".equals(selectedIcon)) {
+            icon = R.drawable.two;
+        } else if ("Icon 3".equals(selectedIcon)) {
+            icon = R.drawable.three;
+        }
+
+        // Build the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "mc")
-                .setSmallIcon(R.drawable.nott) // Use your icon
-                .setContentTitle("Notification")
-                .setContentText("This is notification number " + pushCounter + " .")
+                .setSmallIcon(icon)
+                .setContentTitle(title)
+                .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
         Notification notification = builder.build();
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        notificationManagerCompat.notify(pushCounter, notification); // Use pushCounter as notification ID
+        notificationManagerCompat.notify(pushCounter, notification);
 
         pushCounter++;
     }
@@ -91,15 +112,9 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_POST_NOTIFICATIONS) {
-            // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission was granted
-                if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    return;
-                }
-                notificationManagerCompat.notify(pushCounter, notification);
+                Toast.makeText(this, "Notification permission granted", Toast.LENGTH_SHORT).show();
             } else {
-                // Permission denied, handle accordingly
                 Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show();
             }
         }
